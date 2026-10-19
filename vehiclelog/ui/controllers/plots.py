@@ -35,13 +35,19 @@ class PlotsController:
                 continue
             info = self.store.signals[key]
             plot = self.graphics.addPlot(row=index, col=0)
+            plot.setMinimumSize(0, 0)
+            self.graphics.ci.layout.setRowStretchFactor(index, 1)
             color = COLORS[index % len(COLORS)]
             plot.setTitle(f"{info.name} <span style='color:#829bb7;font-size:10px'> · {info.unit or '—'}</span>", color=color, size="10pt")
             plot.showGrid(x=True, y=True, alpha=0.18)
             plot.setMenuEnabled(False)
             plot.setLabel("left", units=info.unit or None)
             plot.getAxis("left").setWidth(64)
-            plot.setLabel("bottom", "Thời gian", units="s")
+            if index == len(self.project.selected_signals) - 1:
+                plot.setLabel("bottom", "Thời gian", units="s")
+            else:
+                plot.hideAxis("bottom")
+            plot.setAutoVisible(y=True)
             plot.setDownsampling(auto=False)
             if first_plot is not None:
                 plot.setXLink(first_plot)
@@ -60,7 +66,8 @@ class PlotsController:
                 plot.addItem(region)
                 self.segment_regions.append((segment.id, region))
             for cursor in self.project.cursors:
-                line = pg.InfiniteLine(pos=cursor.time, angle=90, movable=not cursor.locked and self._worker is None,
+                line = pg.InfiniteLine(pos=cursor.time, angle=90, movable=self._worker is None,
+                                       bounds=self._cursor_limits(cursor.id),
                                        pen=pg.mkPen(cursor.color, width=1.2), hoverPen=pg.mkPen(cursor.color, width=2),
                                        label=cursor.name if index == 0 else None,
                                        labelOpts={"position": 0.94, "color": cursor.color})
@@ -70,7 +77,6 @@ class PlotsController:
                 self.cursor_lines[key][cursor.id] = line
         count = len(self.plots)
         self.empty_label.setVisible(count == 0)
-        self.graphics.setMinimumHeight(max(160, count * 155))
         if first_plot is not None:
             first_plot.setXRange(*old_range, padding=0)
             self._overview_key = next(iter(self.plots))
@@ -83,6 +89,7 @@ class PlotsController:
         self._syncing = False
         self._update_curves()
         self._refresh_values()
+        self.graphics.fit_rows()
 
 
     def _range_changed(self, *_):
@@ -106,8 +113,22 @@ class PlotsController:
         self._plot_timer.start()
 
 
-    def reset_view(self):
-        """Đặt khoảng xem về toàn bộ thời lượng log."""
+    def fit_horizontal(self):
+        """Căn ngang: dùng chung khoảng thời gian toàn log, giữ lựa chọn tín hiệu."""
         if self.plots:
             next(iter(self.plots.values())).setXRange(0, max(1, self.duration), padding=0)
+            self._update_curves()
+
+    def fit_vertical(self):
+        """Căn dọc: trục Y riêng của mỗi tín hiệu tự bao dữ liệu đang xem."""
+        for plot in self.plots.values():
+            plot.setAutoVisible(y=True)
+            plot.enableAutoRange(axis=pg.ViewBox.YAxis, enable=True)
+            plot.getViewBox().updateAutoRange()
+
+    def reset_view(self):
+        """Căn X/Y và co mọi hàng đồ thị vừa viewport hiện tại."""
+        self.fit_horizontal()
+        self.fit_vertical()
+        self.graphics.fit_rows()
 

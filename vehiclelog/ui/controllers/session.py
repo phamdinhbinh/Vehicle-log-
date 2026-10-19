@@ -89,6 +89,7 @@ class SessionController:
             self.project.selected_signals = list(store.signals)[:3]
         if not self.project.cursors:
             self.project.cursors = [Cursor("M1", 0, COLORS[2]), Cursor("M2", self.duration, COLORS[1])]
+        self._sync_stages()
         source_name = Path(self.project.source).name if self.project.source else "Bộ dữ liệu"
         self.source_label.setText(f"{source_name}  ·  {self.duration:,.1f} s")
         self.source_label.setToolTip(self.project.source)
@@ -121,6 +122,7 @@ class SessionController:
                                if isinstance(stats.get("frames"), int) else f"Xem trước {len(frames):,} bản tin đầu; không phải toàn bộ log")
         self._refresh_tables()
         self._rebuild_plots()
+        self.reset_view()
         self._set_available()
         self.status_label.setText(f"Đã mở {source_name} · {len(store.signals):,} tín hiệu · {self.duration:,.1f} s")
 

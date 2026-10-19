@@ -49,9 +49,10 @@ class DemoController:
         if duration <= 0:
             return
         self.project.cursors = [Cursor(f"M{i+1}", duration*i/3, COLORS[i % len(COLORS)]) for i in range(4)]
-        self.project.segments = [Segment(name, duration*i/3, duration*(i+1)/3, COLORS[i],
-                                start_cursor=self.project.cursors[i].id, end_cursor=self.project.cursors[i+1].id)
-                                 for i, name in enumerate(["Tăng tốc / chạy", "Thu hồi năng lượng", "Chạy ổn định"])]
+        self.project.segments = []
+        self._sync_stages()
+        for stage, name in zip(self.project.segments, ["Tăng tốc / chạy", "Thu hồi năng lượng", "Chạy ổn định"]):
+            stage.name = name
         voltage = next((k for k, v in self.store.signals.items() if "volt" in v.name.lower()), None)
         current = next((k for k, v in self.store.signals.items() if "current" in v.name.lower()), None)
         if voltage and current:

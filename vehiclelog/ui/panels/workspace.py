@@ -9,6 +9,7 @@ from __future__ import annotations
 from PySide6 import QtCore, QtWidgets
 import pyqtgraph as pg
 from ..widgets import label, button, table
+from ..plot_canvas import FittedPlotCanvas
 
 Qt = QtCore.Qt
 
@@ -30,18 +31,26 @@ class WorkspacePanel:
         self.range_label = label("—", "muted")
         row.addWidget(self.range_label)
         row.addStretch()
-        row.addWidget(button("Toàn log", self.reset_view))
         layout.addLayout(row)
-        self.plot_scroll = QtWidgets.QScrollArea()
-        self.plot_scroll.setWidgetResizable(True)
-        self.graphics = pg.GraphicsLayoutWidget()
-        self.plot_scroll.setWidget(self.graphics)
-        layout.addWidget(self.plot_scroll, 1)
+        fit_bar = QtWidgets.QHBoxLayout()
+        self.fit_x_button = button("Căn ngang", self.fit_horizontal)
+        self.fit_x_button.setToolTip("Đưa trục thời gian của mọi tín hiệu về toàn bộ log.")
+        self.fit_y_button = button("Căn dọc", self.fit_vertical)
+        self.fit_y_button.setToolTip("Tự căn trục giá trị Y riêng cho mỗi tín hiệu trong vùng đang xem.")
+        self.fit_all_button = button("Vừa màn hình", self.reset_view)
+        self.fit_all_button.setToolTip("Căn cả X/Y và chia các khung để mọi tín hiệu đã chọn đều hiện trên màn hình.")
+        for control in (self.fit_x_button, self.fit_y_button, self.fit_all_button):
+            fit_bar.addWidget(control)
+        fit_bar.addStretch()
+        layout.addLayout(fit_bar)
+        # Canvas co cả scene khi cần, thay vì tăng minimumHeight và buộc cuộn.
+        self.graphics = FittedPlotCanvas()
+        layout.addWidget(self.graphics, 1)
         self.empty_label = label("Mở log và chọn tín hiệu ở bảng bên trái\nđể bắt đầu phân tích.", "muted")
         self.empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.empty_label)
         self.overview = pg.PlotWidget()
-        self.overview.setFixedHeight(75)
+        self.overview.setFixedHeight(55)
         self.overview.setMouseEnabled(x=True, y=False)
         self.overview.hideAxis("left")
         self.overview.getAxis("bottom").setLabel("Thời gian", units="s")

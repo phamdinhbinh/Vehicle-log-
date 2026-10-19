@@ -71,20 +71,18 @@ def test_store_signals_can_be_selected_and_removed_from_plot(window, app):
     assert "voltage" not in window.plots
 
 
-def test_linked_cursor_updates_segment_and_invalidates_results(window):
-    window.add_cursor(time=1.0)
-    cursor = window.project.cursors[-1]
-    segment = Segment("Urban", 1.0, 4.0, start_cursor=cursor.id)
-    window.add_segment(segment)
+def test_middle_cursor_updates_both_adjacent_stages_and_invalidates_results(window):
+    cursor = window.add_cursor(time=1.0)
+    left, right = window.project.segments
     window.project.results = [
-        FormulaResult("energy", "Battery energy", segment.id, segment.name, 0.01, "kWh")
+        FormulaResult("energy", "Battery energy", right.id, right.name, 0.01, "kWh")
     ]
 
     window._sync_cursor(cursor.id, 1.5)
 
     assert cursor.time == pytest.approx(1.5)
-    assert segment.start == pytest.approx(1.5)
-    assert segment.end == pytest.approx(4.0)
+    assert [(s.start, s.end) for s in window.project.segments] == [(0, 1.5), (1.5, 5)]
+    assert [s.id for s in window.project.segments] == [left.id, right.id]
     assert not window.project.results
 
 
@@ -236,3 +234,120 @@ def test_formula_preview_bounds_memory_preserves_peaks_and_gap(monkeypatch):
     assert np.nanmax(display_values) == 1000
     assert np.nanmin(display_values) == -500
     assert np.any(np.isnan(display_values))
+
+
+def test_pair_selector_shows_both_values_delta_and_elapsed_time(window):
+    window.add_cursor(1)
+    window.add_cursor(3)
+    window.pair_combo.setCurrentIndex(1)  # M2=1 s → M3=3 s.
+    assert window.value_table.horizontalHeaderItem(1).text() == 'Y(M2)'
+    assert window.value_table.horizontalHeaderItem(2).text() == 'Y(M3)'
+    rows = {r.key: r for r in window.last_measurements}
+    assert (rows['current'].start_value, rows['current'].end_value, rows['current'].delta) == (20, -5, -25)
+    assert 'Δt = 2.000000 s' in window.delta_label.text()
+    window.cursor_table.selectRow(3)  # M4 uses previous pair M3→M4.
+    assert window.pair_combo.currentIndex() == 2
+
+
+def test_marker_cannot_cross_neighbor_and_duplicate_not_added(window):
+    middle = window.add_cursor(2)
+    assert window.add_cursor(2) is None
+    assert len(window.project.cursors) == 3
+    window._sync_cursor(middle.id, 9)
+    assert 0 < middle.time < 5
+    assert all(s.end > s.start for s in window.project.segments)
+    window.cursor_table.selectRow(1)
+    window.delete_cursor()
+    assert len(window.project.cursors) == 2
+    assert [(s.start, s.end) for s in window.project.segments] == [(0, 5)]
+
+
+def test_adjacent_stage_energy_uses_updated_bounds_and_explicit_assignment(window):
+    from vehiclelog.formulas import evaluate_all
+    middle = window.add_cursor(2)
+    second = window.project.segments[1]
+    formula = Formula('Energy', 'integral(U * I) / 3600000',
+                      {'U': 'voltage', 'I': 'current'}, 'kWh', [second.id], max_gap=1)
+    window.project.formulas = [formula]
+    result = evaluate_all(window.store, [formula], window.project.segments)
+    assert len(result) == 1 and result[0].segment_id == second.id
+    assert result[0].value == pytest.approx(2000 / 3600000)
+    window._sync_cursor(middle.id, 3)
+    result = evaluate_all(window.store, [formula], window.project.segments)
+    assert len(result) == 1 and result[0].value == pytest.approx(-2000 / 3600000)
+
+
+def test_axis_fit_buttons_restore_full_time_and_visible_y(window, app):
+    plot = window.plots['voltage']
+    plot.setXRange(1, 2, padding=0)
+    plot.setYRange(-1, 1, padding=0)
+    window.fit_x_button.click()
+    app.processEvents()
+    assert plot.viewRange()[0] == pytest.approx([0, 5])
+    window.fit_y_button.click()
+    app.processEvents()
+    low, high = plot.viewRange()[1]
+    assert low < 400 < high
+    window.fit_all_button.click()
+    app.processEvents()
+    assert plot.viewRange()[0] == pytest.approx([0, 5])
+
+
+def test_all_selected_plots_fit_without_scrolling_after_resize(window, app, tmp_path):
+    with StoreWriter(tmp_path / 'many-signals', {'duration': 5}) as writer:
+        for i in range(15):
+            writer.add_signal(SignalInfo(str(i), f'Signal {i}', 'V'))
+            writer.append(str(i), np.arange(6), np.arange(6) * (i + 1))
+        large_selection = writer.finish()
+    window.set_store(large_selection)
+    window.project.selected_signals = list(large_selection.signals)
+    window._rebuild_plots()
+    window.show()
+    for size in ((1500, 980), (1100, 750), (1700, 1000)):
+        window.resize(*size)
+        for _ in range(6):
+            app.processEvents()
+        window.graphics.fit_rows()
+        app.processEvents()
+        viewport = window.graphics.viewport().rect().adjusted(-2, -2, 2, 2)
+        assert len(window.plots) == 15
+        assert not window.graphics.verticalScrollBar().isVisible()
+        assert not window.graphics.horizontalScrollBar().isVisible()
+        for key, plot in window.plots.items():
+            bounds = window.graphics.mapFromScene(plot.sceneBoundingRect()).boundingRect()
+            assert bounds.height() > 0 and viewport.contains(bounds), (size, key, bounds, viewport)
+            times, values = window.curves[key].getData()
+            assert len(times) == 6
+
+
+def test_repeated_jobs_deliver_widget_progress_on_gui_thread(window, app, monkeypatch):
+    import threading
+    gui_thread = threading.get_ident()
+    deliveries = []
+    set_text = window.status_label.setText
+    set_value = window.progress_bar.setValue
+
+    def observed_text(text):
+        deliveries.append(threading.get_ident())
+        if threading.get_ident() == gui_thread:
+            set_text(text)
+
+    def observed_value(value):
+        deliveries.append(threading.get_ident())
+        if threading.get_ident() == gui_thread:
+            set_value(value)
+
+    monkeypatch.setattr(window.status_label, 'setText', observed_text)
+    monkeypatch.setattr(window.progress_bar, 'setValue', observed_value)
+    results = []
+    for job in range(3):
+        def work(progress, token, value=job):
+            for i in range(20):
+                progress(i / 20, f'Job {value} progress {i}')
+                token.check()
+            return value
+        window._run_task('Repeated jobs', work, results.append)
+        _wait_until(app, lambda: window._worker is None)
+    assert results == [0, 1, 2]
+    assert len(deliveries) >= 120
+    assert all(thread_id == gui_thread for thread_id in deliveries)

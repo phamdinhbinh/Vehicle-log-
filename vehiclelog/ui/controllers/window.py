@@ -24,10 +24,10 @@ class WindowController:
         has_store = self.store is not None
         for widget in (self.open_button, self.demo_button, self.dbc_button, self.save_button):
             widget.setEnabled(not busy)
-        for widget in (self.cursor_button, self.export_button, self.segment_add, self.segment_edit,
-                       self.segment_delete, self.formula_add, self.formula_edit, self.formula_duplicate,
+        for widget in (self.cursor_button, self.export_button, self.segment_edit,
+                       self.formula_add, self.formula_edit, self.formula_duplicate,
                        self.formula_delete, self.formula_plot, self.calculate_button, self.trace_button, self.delete_cursor_button,
-                       self.cursor_color_button):
+                       self.cursor_color_button, self.pair_combo):
             widget.setEnabled(has_store and not busy)
         # Không cho sửa đầu vào khi tác vụ nền đang dùng dữ liệu dự án.
         for widget in (self.signal_list, self.cursor_table, self.segment_table, self.formula_table):
@@ -35,7 +35,7 @@ class WindowController:
         for lines in self.cursor_lines.values():
             for cursor_id, line in lines.items():
                 cursor = next((c for c in self.project.cursors if c.id == cursor_id), None)
-                line.setMovable(not busy and cursor is not None and not cursor.locked)
+                line.setMovable(not busy and cursor is not None)
         self.cancel_button.setEnabled(busy)
         self.cancel_button.setVisible(busy)
         self.progress_bar.setVisible(busy)
@@ -66,9 +66,9 @@ class WindowController:
         """Hiện hướng dẫn các bước thao tác và phím tắt."""
         QtWidgets.QMessageBox.information(self, "Hướng dẫn nhanh",
             "1. Mở BLF và gán DBC cho từng kênh CAN, hoặc mở MF4.\n"
-            "2. Tick tín hiệu bên trái. Zoom bằng chuột; kéo vùng timeline để đổi khoảng xem.\n"
+            "2. Tick tín hiệu bên trái. Khung đồ thị tự co vừa màn hình; dùng Căn ngang / Căn dọc để căn trục.\n"
             "3. Thêm con trỏ, kéo mốc hoặc sửa thời gian trong bảng bên phải.\n"
-            "4. Tạo giai đoạn bằng hai mốc hoặc nhập thời gian trực tiếp.\n"
+            "4. M1–M2 tự tạo giai đoạn 1, M2–M3 tạo giai đoạn 2… Chọn cặp để xem Y đầu/cuối, Δt và ΔY.\n"
             "5. Tạo công thức: đặt tên, chọn tín hiệu / bí danh, biểu thức, đơn vị và tick giai đoạn.\n"
             "6. Tính kết quả, kiểm tra trạng thái dữ liệu; xuất Excel hoặc MF4.\n"
             "7. Lưu dự án để giữ bố cục, mốc, giai đoạn và công thức.\n\n"

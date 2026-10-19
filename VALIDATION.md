@@ -1,5 +1,25 @@
 # Kết quả kiểm chứng bản 0.1.0
 
+## Cập nhật căn đồ thị và giai đoạn liền kề
+
+Kiểm thử toàn bộ: **109 passed in 5.87s**; 8 cảnh báo deprecation đến từ
+pyqtgraph với NumPy 2.5 trong kiểm tra geometry, không có kiểm thử thất bại.
+
+- Kiểm tra 15 tín hiệu đều nằm trong viewport ở 1500×980, 1100×750, 1700×1000,
+  không có thanh cuộn đồ thị; các nút căn X/Y đưa đúng trục về dữ liệu.
+- Con trỏ sắp theo thời gian; đúng n−1 giai đoạn M1–M2, M2–M3…; kiểm tra
+  thêm, xóa, kéo, giới hạn không đi xuyên mốc và chuyển project cũ.
+- Kiểm tra giữ gán công thức khi kéo mốc, kế thừa khi chia/gộp có kiểm soát,
+  và tích phân năng lượng chỉ theo ranh giới/giai đoạn đã chọn.
+- Đối chiếu Y đầu/Y cuối, ΔY có dấu, Δt; ngoài dữ liệu hoặc invalid trả trống.
+- Sửa lỗi callback Qt trong Python mixin: dùng GuiTaskRelay (QObject) nhận queued
+  signal để progress/result/error luôn về GUI thread. Có regression test chạy
+  ba tác vụ liên tiếp, đối chiếu thread của mọi lần cập nhật widget.
+- Chạy thật nút Demo → import → ba lần tính liên tiếp: 4 con trỏ, 3 giai đoạn,
+  mỗi lần 3 năng lượng + 3 trace, không lỗi. Ảnh desktop-preview.png đã cập nhật.
+
+Các kết quả dưới đây là lịch sử kiểm chứng của bản nền và lần tách component.
+
 ## Kiểm chứng sau khi tách component
 
 Đã tách giao diện, đọc/ghi log, tính toán, cache và CLI thành các module theo

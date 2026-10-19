@@ -1,6 +1,6 @@
 """Chức năng: Panel con trỏ và giá trị tín hiệu tại mốc bên phải.
 
-Sửa tại đây khi: đổi bảng mốc, nút màu, tùy chọn bám mẫu hoặc bảng giá trị.
+Sửa tại đây khi: đổi bảng mốc, chọn cặp đo, nút màu hoặc bảng Y đầu/cuối/ΔY.
 Liên kết: controllers/cursors.py xử lý tạo / kéo / sửa mốc và giá trị tại mốc.
 """
 # COMPONENT: ui.panels.inspector
@@ -19,16 +19,16 @@ class InspectorPanel:
     """
 
     def _build_inspector(self):
-        """Dựng bảng con trỏ, điều khiển bám mẫu và giá trị tại mốc bên phải."""
+        """Dựng bảng con trỏ đơn giản và phép đo giữa hai mốc liền kề."""
         panel = QtWidgets.QFrame()
         panel.setObjectName("panel")
         layout = QtWidgets.QVBoxLayout(panel)
         layout.setContentsMargins(10, 12, 10, 10)
         layout.addWidget(label("CON TRỎ ĐO", "section"))
-        self.cursor_table = table(["Tên", "Thời gian (s)", "Khóa"])
-        self.cursor_table.setMaximumHeight(270)
+        self.cursor_table = table(["Con trỏ", "Thời gian (s)"])
+        self.cursor_table.setMaximumHeight(190)
         self.cursor_table.itemChanged.connect(self._cursor_edited)
-        self.cursor_table.itemSelectionChanged.connect(self._refresh_values)
+        self.cursor_table.itemSelectionChanged.connect(self._cursor_selected)
         self.cursor_table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
         layout.addWidget(self.cursor_table)
         controls = QtWidgets.QHBoxLayout()
@@ -38,16 +38,22 @@ class InspectorPanel:
         self.cursor_color_button = button("Màu", self.change_cursor_color)
         controls.addWidget(self.cursor_color_button)
         layout.addLayout(controls)
-        self.snap_check = QtWidgets.QCheckBox("Bám mẫu của tín hiệu đầu tiên")
-        self.snap_check.setToolTip("Khi kéo hoặc sửa thời gian, chọn timestamp gần nhất của tín hiệu đầu tiên đang vẽ.")
-        layout.addWidget(self.snap_check)
-        layout.addWidget(label("Sửa tên / thời gian bằng cách nhấp đúp.\nKéo mốc trên đồ thị để đổi vị trí.", "muted"))
+        hint = label("M1 → M2 là giai đoạn 1; M2 → M3 là giai đoạn 2.\nKéo mốc hoặc nhấp đúp thời gian để sửa.", "muted")
+        hint.setWordWrap(True)
+        layout.addWidget(hint)
         layout.addSpacing(12)
-        self.values_title = label("GIÁ TRỊ TẠI MỐC", "section")
+        self.values_title = label("ĐO GIỮA HAI CON TRỎ", "section")
         layout.addWidget(self.values_title)
-        self.value_table = table(["Tín hiệu", "Giá trị", "Đơn vị"])
+        self.pair_combo = QtWidgets.QComboBox()
+        self.pair_combo.setToolTip("Chọn hai con trỏ liền nhau để đọc Y đầu, Y cuối và ΔY.")
+        self.pair_combo.currentIndexChanged.connect(self._refresh_values)
+        layout.addWidget(self.pair_combo)
+        self.value_table = table(["Tín hiệu", "Y đầu", "Y cuối", "ΔY", "Đơn vị"])
+        self.value_table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.value_table.horizontalHeader().setStretchLastSection(False)
+        self.value_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
         layout.addWidget(self.value_table, 1)
-        self.delta_label = label("Chọn hai mốc để xác định giai đoạn.\nGiá trị hiển thị: mẫu gần nhất trước mốc.", "muted")
+        self.delta_label = label("Thêm hai con trỏ để đo Δt và ΔY.\nGiá trị tại mốc: giữ mẫu gần nhất trước mốc.", "muted")
         self.delta_label.setWordWrap(True)
         layout.addWidget(self.delta_label)
         self.main_splitter.addWidget(panel)

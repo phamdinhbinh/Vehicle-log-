@@ -69,8 +69,11 @@ All writes temporary/atomic, reject overwriting input source, cancellation clean
 Calls above APIs in cancellable QThread background workers. Demo action import
 demo via import_log. Parent provides __main__, persistence, store.
 `vehiclelog.project.save_project(project, path)` and `load_project(path) -> Project`.
-GUI signal plot selection, multi draggable cursors, segment CRUD with optional
-cursor linking, formula CRUD explicit segment checkboxes, calculate, result table,
+GUI signal plot selection, fit X/Y buttons and a fitted canvas with no scroll.
+Ordered cursors automatically generate adjacent stages via stages.synchronize_stages;
+the GUI edits stage names only. Cursor pairs expose native Y values, delta-Y and
+delta-t via measurements.py; no lock/snap/manual-range UI. Formula CRUD retains
+explicit segment checkboxes, calculate, result table,
 Excel/decoded MF4/raw MF4 export, project save/load. Never UI-blocking import,
 calculation, export. Cache store windowed reads for plot (small overview minmax).
 

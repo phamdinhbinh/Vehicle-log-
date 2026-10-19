@@ -66,9 +66,13 @@ vào các file API ngắn này.
 | Bố cục đồ thị, timeline và tab | [ui/panels/workspace.py](vehiclelog/ui/panels/workspace.py) | [ui/controllers/plots.py](vehiclelog/ui/controllers/plots.py) |
 | Zoom, đường tín hiệu, vùng màu giai đoạn | [ui/controllers/plots.py](vehiclelog/ui/controllers/plots.py) | `_rebuild_plots`, `_range_changed`, `_overview_changed` |
 | Cache đồ thị và đọc preview nền | [ui/controllers/previews.py](vehiclelog/ui/controllers/previews.py) | `_update_curves`, `_queue_previews` |
-| Bảng con trỏ, màu, khóa, bám mẫu, giá trị tại mốc | [ui/panels/inspector.py](vehiclelog/ui/panels/inspector.py) | [ui/controllers/cursors.py](vehiclelog/ui/controllers/cursors.py) |
+| Bảng con trỏ, màu và thời gian | [ui/panels/inspector.py](vehiclelog/ui/panels/inspector.py) | [ui/controllers/cursors.py](vehiclelog/ui/controllers/cursors.py) |
+| Chọn cặp mốc, Y đầu/Y cuối, Δt/ΔY | [ui/panels/inspector.py](vehiclelog/ui/panels/inspector.py) | [ui/controllers/measurements.py](vehiclelog/ui/controllers/measurements.py), [measurements.py](vehiclelog/measurements.py) |
+| Căn ngang, căn dọc, vừa màn hình | [ui/panels/workspace.py](vehiclelog/ui/panels/workspace.py) | [ui/controllers/plots.py](vehiclelog/ui/controllers/plots.py) |
+| Co mọi khung đồ thị vừa viewport, không cuộn | [ui/plot_canvas.py](vehiclelog/ui/plot_canvas.py) | `FittedPlotCanvas.fit_rows`, tự gọi khi resize |
 | Các cột/nút trong bảng giai đoạn, công thức, kết quả | [ui/panels/analysis.py](vehiclelog/ui/panels/analysis.py) | Controller segments/formulas tương ứng |
-| Form tạo/sửa giai đoạn | [ui/dialogs/segment.py](vehiclelog/ui/dialogs/segment.py) | [ui/controllers/segments.py](vehiclelog/ui/controllers/segments.py) |
+| Tự tạo giai đoạn M1–M2, M2–M3… | [stages.py](vehiclelog/stages.py) | [ui/controllers/segments.py](vehiclelog/ui/controllers/segments.py) |
+| Form đổi tên giai đoạn (ranh giới chỉ đọc) | [ui/dialogs/segment.py](vehiclelog/ui/dialogs/segment.py) | [ui/controllers/segments.py](vehiclelog/ui/controllers/segments.py) |
 | Form tạo/sửa công thức, tín hiệu, giai đoạn áp dụng | [ui/dialogs/formula.py](vehiclelog/ui/dialogs/formula.py) | [ui/controllers/formulas.py](vehiclelog/ui/controllers/formulas.py) |
 | Form gán DBC theo kênh | [ui/dialogs/dbc.py](vehiclelog/ui/dialogs/dbc.py) | [ui/controllers/session.py](vehiclelog/ui/controllers/session.py) |
 | Form xuất và ước tính lượng dữ liệu | [ui/dialogs/export.py](vehiclelog/ui/dialogs/export.py) | [ui/controllers/exports.py](vehiclelog/ui/controllers/exports.py) |
@@ -90,6 +94,17 @@ liệt kê trong docstring của `MainWindow`:
 - `self.plots`, `self.curves`: các đối tượng hiển thị.
 - `self._worker`, `self._token`: tác vụ chính và yêu cầu hủy.
 - `self._preview_*`: worker/cache riêng của phần đồ thị.
+
+`ui/workers.py` có `GuiTaskRelay`, QObject nhận signal queued tại GUI thread.
+Các callback progress/result/error của controller phải đi qua relay này; không
+nối thẳng signal worker vào slot nằm trong Python mixin để tránh cập nhật widget
+từ luồng nền. Tác vụ chính và preview có relay riêng, dọn sau khi thread kết thúc.
+
+Luồng con trỏ mới: `cursors.py` sửa mốc → `stages.synchronize_stages` tạo đúng
+n−1 giai đoạn liền kề → `measurements.py` cập nhật bảng Y/ΔY. Mốc không vượt
+qua hàng xóm. Không có khóa, bám mẫu hoặc chọn cặp ranh giới thủ công trong UI.
+ID giai đoạn giữ theo cặp mốc để công thức đã tick không đổi khi chỉ kéo mốc;
+chia/gộp khoảng được remap lựa chọn theo phạm vi đã chọn trước đó.
 
 ## 3. Tra nhanh phần đọc và lưu dữ liệu
 
@@ -197,6 +212,8 @@ xử lý dữ liệu được dùng chung giữa GUI và CLI.
 | Giao diện, con trỏ, giai đoạn, form | `tests/test_gui.py` |
 | Đọc BLF/MF4, DBC | `tests/test_importers.py` |
 | Công thức, nội suy, năng lượng | `tests/test_formulas.py` |
+| Giai đoạn tự động, chia/gộp và gán công thức | `tests/test_stages.py` |
+| Giá trị tại mốc, ΔY và dữ liệu thiếu/invalid | `tests/test_measurements.py` |
 | Excel/MF4 đầu ra | `tests/test_exports.py` |
 | Cache và project | `tests/test_store.py` |
 | Cú pháp/lệnh CLI | `tests/test_cli.py` |

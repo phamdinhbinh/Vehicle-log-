@@ -76,9 +76,11 @@ kiểm thử. Các script cài đặt mặc định dùng ràng buộc trong `py
 
 1. **Mở log**, chọn BLF hoặc MF4. Với BLF, gán DBC cho từng kênh.
 2. Tìm tín hiệu theo tên/message/CAN ID và tick chọn để xem đồ thị.
-3. Thêm nhiều con trỏ; đổi tên/thời gian hoặc khóa trong bảng con trỏ.
-4. Tạo giai đoạn từ hai con trỏ hoặc nhập thời gian. Giai đoạn liên kết con trỏ
-   sẽ cập nhật khi kéo mốc; giai đoạn được phép chồng lấn.
+3. Thêm con trỏ và kéo mốc hoặc sửa thời gian trong bảng. Mốc tự đánh số
+   M1, M2, M3… theo thứ tự thời gian; các mốc không đi xuyên qua nhau.
+4. Giai đoạn tự tạo: M1–M2 là giai đoạn 1, M2–M3 là giai đoạn 2… Thêm một
+   mốc để chia khoảng, xóa mốc để gộp khoảng, kéo mốc để cập nhật ranh giới.
+   Có thể đổi tên giai đoạn; không cần tạo liên kết hoặc nhập ranh giới riêng.
 5. Trong **Công thức**, đặt tên, chọn các tín hiệu đầu vào và bí danh, chọn mẫu
    phép tính hoặc nhập biểu thức, đặt đơn vị và tick các giai đoạn áp dụng.
 6. **Tính kết quả**. Xem giá trị và trạng thái theo từng cặp công thức–giai đoạn.
@@ -89,6 +91,24 @@ kiểm thử. Các script cài đặt mặc định dùng ràng buộc trong `py
 
 Khi thay đổi công thức, DBC hoặc ranh giới giai đoạn, kết quả cũ được xóa để
 tính lại. Khi mở lại dự án cũng cần tính lại kết quả từ nguồn đang sử dụng.
+
+## Căn đồ thị và đo giữa hai con trỏ
+
+- **Căn ngang**: đưa trục thời gian của mọi tín hiệu về toàn bộ log.
+- **Căn dọc**: tự căn trục Y riêng của từng tín hiệu trong vùng thời gian đang xem.
+- **Vừa màn hình**: căn cả X/Y; mọi tín hiệu đã chọn có khung nằm trong màn hình.
+- Các khung chia đều chiều cao và tự co khi chọn thêm tín hiệu hoặc đổi cỡ cửa
+  sổ. Vùng đồ thị không có thanh cuộn; khi chọn nhiều tín hiệu, mỗi khung nhỏ hơn.
+- Trong bảng bên phải, chọn **M1 → M2**, **M2 → M3**… để xem `Y đầu`, `Y cuối`,
+  `ΔY = Y cuối − Y đầu` của từng tín hiệu và `Δt = t cuối − t đầu`.
+- Giá trị đo lấy từ mẫu gốc ngay trước/gặp mốc (hold); hover ô để xem tuổi mẫu.
+  Mốc ngoài dữ liệu hoặc mẫu invalid hiển thị `—`, không giả giá trị hoặc ΔY.
+- Công thức năng lượng vẫn tích phân theo timestamp gốc từ đầu đến cuối mỗi
+  giai đoạn đã tick; các nút căn trục chỉ thay cách hiển thị.
+
+Khi chia một giai đoạn đã gán công thức, hai phần kế thừa lựa chọn đó. Khi gộp,
+chỉ kế thừa nếu toàn vùng cũ đã được gán; hãy kiểm tra lại tick giai đoạn sau
+khi thay đổi số mốc. Project cũ được chuyển sang các cặp mốc liền kề khi mở GUI.
 
 ## Công thức
 
@@ -144,8 +164,9 @@ Python tùy ý. Có kiểm tra thứ nguyên cho các đơn vị nhận diện �
   tổng hợp trả về trạng thái `incomplete`, độ phủ và **không công bố tổng thiếu**.
 - Chia cho 0 hoặc công thức sai miền trả về `invalid`.
 - Công thức chuỗi có trạng thái `trace`, cần vẽ để xem thay vì một giá trị tổng.
-- Các giai đoạn chồng lấn được tính độc lập. Không cộng các hàng chồng lấn để
-  suy ra tổng hành trình vì sẽ đếm trùng.
+- Trong GUI, các giai đoạn là những cặp con trỏ liền kề nên không chồng lấn.
+  Backend/CLI vẫn đọc được các phạm vi tùy chọn của project cũ; nếu tự tạo phạm
+  vi chồng lấn bằng script, không cộng các hàng đó thành tổng vì sẽ đếm trùng.
 
 ## Xuất Excel
 
@@ -238,7 +259,7 @@ thu trên BLF 3 GB. Chưa có file thực tế của người dùng để xác n
 
 ## Kiểm thử và đóng gói
 
-Kết quả trong base environment: **94 kiểm thử đạt**, kiểm tra dependency không
+Kết quả trong base environment: **109 kiểm thử đạt**, kiểm tra dependency không
 có xung đột. Chi tiết và số đo tổng hợp tại [VALIDATION.md](VALIDATION.md).
 
 ```bash

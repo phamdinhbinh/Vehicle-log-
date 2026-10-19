@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from PySide6 import QtCore
 from ...models import CancellationToken
-from ..workers import TaskWorker
+from ..workers import TaskWorker, GuiTaskRelay
 
 
 class BackgroundController:
@@ -31,13 +31,17 @@ class BackgroundController:
         self._worker = TaskWorker(function, self._token)
         self._worker.moveToThread(self._thread)
         self._thread.started.connect(self._worker.run)
-        self._worker.progress.connect(self._task_progress)
-        self._worker.finished.connect(self._task_finished)
-        self._worker.failed.connect(self._task_error)
-        self._worker.cancelled.connect(self._task_cancelled)
+        self._task_relay = GuiTaskRelay(self, progress=self._task_progress, result=self._task_finished,
+                                        error=self._task_error, cancelled=self._task_cancelled,
+                                        cleanup=self._task_cleanup)
+        queued = QtCore.Qt.ConnectionType.QueuedConnection
+        self._worker.progress.connect(self._task_relay.progress, queued)
+        self._worker.finished.connect(self._task_relay.result, queued)
+        self._worker.failed.connect(self._task_relay.error, queued)
+        self._worker.cancelled.connect(self._task_relay.cancelled, queued)
         self._worker.done.connect(self._thread.quit)
         self._worker.done.connect(self._worker.deleteLater)
-        self._thread.finished.connect(self._task_cleanup)
+        self._thread.finished.connect(self._task_relay.cleanup, queued)
         self.progress_bar.setValue(0)
         self.status_label.setText(title)
         self._set_available()
@@ -81,6 +85,10 @@ class BackgroundController:
         self._token = None
         self._job_callback = None
         self._pending_result = None
+        relay = self._task_relay
+        self._task_relay = None
+        if relay:
+            relay.deleteLater()
         if thread:
             thread.deleteLater()
         self._set_available()

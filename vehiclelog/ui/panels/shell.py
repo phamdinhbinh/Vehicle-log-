@@ -53,7 +53,7 @@ class ShellLayout:
         self._build_signals()
         self._build_workspace()
         self._build_inspector()
-        self.main_splitter.setSizes([260, 950, 270])
+        self.main_splitter.setSizes([225, 875, 380])
         self.main_splitter.setStretchFactor(1, 1)
         footer = QtWidgets.QHBoxLayout()
         self.status_label = label("Sẵn sàng · mở log hoặc dùng dữ liệu demo để bắt đầu", "muted")

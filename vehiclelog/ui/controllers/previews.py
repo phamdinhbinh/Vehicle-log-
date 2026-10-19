@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from PySide6 import QtCore
 from ...models import CancellationToken
-from ..workers import TaskWorker
+from ..workers import TaskWorker, GuiTaskRelay
 
 
 class PreviewsController:
@@ -87,11 +87,14 @@ class PreviewsController:
         self._preview_worker = TaskWorker(work, self._preview_token)
         self._preview_worker.moveToThread(self._preview_thread)
         self._preview_thread.started.connect(self._preview_worker.run)
-        self._preview_worker.finished.connect(self._preview_received)
-        self._preview_worker.failed.connect(self._preview_error)
+        self._preview_relay = GuiTaskRelay(self, result=self._preview_received,
+                                           error=self._preview_error, cleanup=self._preview_cleanup)
+        queued = QtCore.Qt.ConnectionType.QueuedConnection
+        self._preview_worker.finished.connect(self._preview_relay.result, queued)
+        self._preview_worker.failed.connect(self._preview_relay.error, queued)
         self._preview_worker.done.connect(self._preview_thread.quit)
         self._preview_worker.done.connect(self._preview_worker.deleteLater)
-        self._preview_thread.finished.connect(self._preview_cleanup)
+        self._preview_thread.finished.connect(self._preview_relay.cleanup, queued)
         self._preview_thread.start()
 
 
@@ -117,6 +120,10 @@ class PreviewsController:
         self._preview_thread = None
         self._preview_token = None
         self._preview_result = None
+        relay = self._preview_relay
+        self._preview_relay = None
+        if relay:
+            relay.deleteLater()
         if thread:
             thread.deleteLater()
         if self._closing_after_preview:

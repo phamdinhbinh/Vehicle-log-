@@ -28,6 +28,7 @@ from .controllers.cursors import CursorsController
 from .controllers.segments import SegmentsController
 from .controllers.formulas import FormulasController
 from .controllers.exports import ExportsController
+from .controllers.measurements import MeasurementsController
 
 
 class MainWindow(
@@ -45,6 +46,7 @@ class MainWindow(
     PlotsController,
     PreviewsController,
     CursorsController,
+    MeasurementsController,
     SegmentsController,
     FormulasController,
     ExportsController,
@@ -85,6 +87,7 @@ class MainWindow(
         self._job_callback = None
         self._pending_result = None
         self._job_failed = False
+        self._task_relay = None
         self._dirty = False
         self._project_path = None
         self._demo_dir = None
@@ -92,6 +95,7 @@ class MainWindow(
         self._preview_cache = OrderedDict()
         self._preview_thread = None
         self._preview_worker = None
+        self._preview_relay = None
         self._preview_token = None
         self._preview_result = None
         self._preview_pending = None

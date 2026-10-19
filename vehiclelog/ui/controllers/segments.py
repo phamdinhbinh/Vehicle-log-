@@ -1,91 +1,61 @@
-"""Chức năng: Quản lý giai đoạn từ các cặp mốc hoặc thời gian nhập tay.
+"""Chức năng: các giai đoạn tự tạo giữa hai con trỏ liền nhau.
 
-Sửa tại đây khi: đổi kiểm tra ranh giới, tạo / sửa / xóa hoặc zoom tới giai đoạn.
-Liên kết: dialogs/segment.py nhận giá trị; panels/analysis.py dựng bảng; formulas.py dùng gán giai đoạn.
+Sửa tại đây khi: đổi bảng giai đoạn hoặc cách chọn vùng đo; quy tắc ở stages.py.
+Liên kết: không tạo giai đoạn thủ công; kéo/thêm/xóa con trỏ để đổi khoảng.
 """
 # COMPONENT: ui.controllers.segments
-from __future__ import annotations
-
 from PySide6 import QtWidgets
+
+from ...stages import synchronize_stages
 from ..dialogs.segment import SegmentDialog
 from ..widgets import fill_table
 
 
 class SegmentsController:
-    """Mixin chức năng của MainWindow, không khởi tạo độc lập.
+    """Mixin của MainWindow: tự đồng bộ giai đoạn, chỉ cho phép đổi tên."""
 
-    self.project / self.store và widget được main_window.py cùng panels/ cung cấp.
-    Callback có thể gọi controller khác qua cùng self; backend giữ thuật toán dữ liệu.
-    """
-
-    def add_segment(self, segment):
-        """Kiểm tra phạm vi rồi thêm giai đoạn, làm mới bảng và vùng tô trên đồ thị."""
-        segment.validate()
-        if self.store and (segment.start < 0 or segment.end > self.duration + 1e-6):
-            raise ValueError("Giai đoạn phải nằm trong thời gian log.")
-        self.project.segments.append(segment)
-        self._mark_changed()
-        self._refresh_tables()
-        self._rebuild_plots()
-
-
-    def new_segment(self):
-        """Mở hộp thoại tạo giai đoạn từ hai mốc hoặc thời gian nhập trực tiếp."""
-        if not self.store or self._worker:
-            return
-        dialog = SegmentDialog(self.project.cursors, parent=self)
-        if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
-            try:
-                self.add_segment(dialog.segment_value())
-            except ValueError as exc:
-                self._notify("Giai đoạn chưa hợp lệ", str(exc))
-
+    def _sync_stages(self):
+        """M1–M2 là giai đoạn 1, M2–M3 là giai đoạn 2; giữ gán công thức phù hợp."""
+        return synchronize_stages(self.project)
 
     def edit_segment(self):
-        """Sửa giai đoạn hiện chọn và kiểm tra ranh giới trong thời lượng log."""
+        """Đổi tên giai đoạn; ranh giới luôn lấy trực tiếp từ cặp con trỏ."""
         row = self.segment_table.currentRow()
         if row < 0 or self._worker:
             return
-        dialog = SegmentDialog(self.project.cursors, self.project.segments[row], self)
+        segment = self.project.segments[row]
+        dialog = SegmentDialog(self.project.cursors, segment, self)
         if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
-            segment = dialog.segment_value()
-            if segment.start < 0 or segment.end > self.duration + 1e-6:
-                self._notify("Giai đoạn chưa hợp lệ", "Giai đoạn phải nằm trong thời gian log.")
-                return
-            self.project.segments[row] = segment
-            self._mark_changed()
+            segment.name = dialog.segment_value().name
+            self._dirty = True
+            # Tên kết quả được cập nhật, không thay giá trị đã tính.
+            for result in self.project.results:
+                if result.segment_id == segment.id:
+                    result.segment_name = segment.name
             self._refresh_tables()
-            self._rebuild_plots()
-
-
-    def delete_segment(self):
-        """Xóa giai đoạn và bỏ gán giai đoạn đó khỏi mọi công thức."""
-        row = self.segment_table.currentRow()
-        if row < 0 or self._worker:
-            return
-        segment = self.project.segments.pop(row)
-        for formula in self.project.formulas:
-            formula.segment_ids = [value for value in formula.segment_ids if value != segment.id]
-        self._mark_changed()
-        self._refresh_tables()
-        self._rebuild_plots()
-
 
     def _refresh_segments(self):
-        """Hiện thời gian và tên con trỏ liên kết của các giai đoạn."""
+        """Hiện các cặp liền kề và đồng bộ danh sách chọn cặp đo ΔY."""
         names = {c.id: c.name for c in self.project.cursors}
+        selected_id = self.pair_combo.currentData()
         self.segment_table.blockSignals(True)
-        fill_table(self.segment_table, [(s.name, f"{s.start:.6f}", f"{s.end:.6f}", f"{s.end-s.start:.3f}",
-                                        f"{names.get(s.start_cursor, 'thời gian')} → {names.get(s.end_cursor, 'thời gian')}")
+        fill_table(self.segment_table, [(s.name, f"{s.start:.6f}", f"{s.end:.6f}", f"{s.end-s.start:.6f}",
+                                        f"{names.get(s.start_cursor, '')} → {names.get(s.end_cursor, '')}")
                                        for s in self.project.segments])
         self.segment_table.blockSignals(False)
-
+        self.pair_combo.blockSignals(True)
+        self.pair_combo.clear()
+        for s in self.project.segments:
+            self.pair_combo.addItem(f"{names[s.start_cursor]} → {names[s.end_cursor]} · {s.name}", s.id)
+        index = self.pair_combo.findData(selected_id)
+        self.pair_combo.setCurrentIndex(max(0, index))
+        self.pair_combo.blockSignals(False)
 
     def _focus_segment(self):
-        """Zoom tới giai đoạn được chọn trong bảng."""
+        """Chọn cặp đo tương ứng và zoom tới giai đoạn được chọn trong bảng."""
         row = self.segment_table.currentRow()
-        if row >= 0 and row < len(self.project.segments) and self.plots:
+        if 0 <= row < len(self.project.segments):
             segment = self.project.segments[row]
-            if segment.end > segment.start:
-                next(iter(self.plots.values())).setXRange(segment.start, segment.end, padding=0.03)
-
+            self.pair_combo.setCurrentIndex(self.pair_combo.findData(segment.id))
+            if self.plots:
+                next(iter(self.plots.values())).setXRange(segment.start, segment.end, padding=0)

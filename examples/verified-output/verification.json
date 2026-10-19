@@ -1,0 +1,295 @@
+{
+  "status": "passed",
+  "demo_expected_full_journey": {
+    "Năng lượng ròng": 0.26666666666666666,
+    "Năng lượng xả": 0.35555555555555557,
+    "Năng lượng thu hồi": 0.08888888888888889,
+    "Quãng đường": 1.2,
+    "Mức tiêu thụ": 22.22222222222222
+  },
+  "results": [
+    {
+      "formula_id": "b8a83c765074",
+      "formula_name": "Năng lượng ròng",
+      "segment_id": "86f1e17f773f",
+      "segment_name": "Tăng tốc",
+      "value": 0.2222222222222222,
+      "unit": "kWh",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "b8a83c765074",
+      "formula_name": "Năng lượng ròng",
+      "segment_id": "a0a85c33ba43",
+      "segment_name": "Thu hồi năng lượng",
+      "value": -0.08888888888888889,
+      "unit": "kWh",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "b8a83c765074",
+      "formula_name": "Năng lượng ròng",
+      "segment_id": "f65486eea975",
+      "segment_name": "Chạy ổn định",
+      "value": 0.13333333333333333,
+      "unit": "kWh",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "b8a83c765074",
+      "formula_name": "Năng lượng ròng",
+      "segment_id": "439a8ef9b086",
+      "segment_name": "Toàn hành trình",
+      "value": 0.26666666666666666,
+      "unit": "kWh",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "8383a38e1c26",
+      "formula_name": "Năng lượng xả",
+      "segment_id": "86f1e17f773f",
+      "segment_name": "Tăng tốc",
+      "value": 0.2222222222222222,
+      "unit": "kWh",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "8383a38e1c26",
+      "formula_name": "Năng lượng xả",
+      "segment_id": "a0a85c33ba43",
+      "segment_name": "Thu hồi năng lượng",
+      "value": 0.0,
+      "unit": "kWh",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "8383a38e1c26",
+      "formula_name": "Năng lượng xả",
+      "segment_id": "f65486eea975",
+      "segment_name": "Chạy ổn định",
+      "value": 0.13333333333333333,
+      "unit": "kWh",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "8383a38e1c26",
+      "formula_name": "Năng lượng xả",
+      "segment_id": "439a8ef9b086",
+      "segment_name": "Toàn hành trình",
+      "value": 0.35555555555555557,
+      "unit": "kWh",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "e93a0785a158",
+      "formula_name": "Năng lượng thu hồi",
+      "segment_id": "86f1e17f773f",
+      "segment_name": "Tăng tốc",
+      "value": 0.0,
+      "unit": "kWh",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "e93a0785a158",
+      "formula_name": "Năng lượng thu hồi",
+      "segment_id": "a0a85c33ba43",
+      "segment_name": "Thu hồi năng lượng",
+      "value": 0.08888888888888889,
+      "unit": "kWh",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "e93a0785a158",
+      "formula_name": "Năng lượng thu hồi",
+      "segment_id": "f65486eea975",
+      "segment_name": "Chạy ổn định",
+      "value": 0.0,
+      "unit": "kWh",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "e93a0785a158",
+      "formula_name": "Năng lượng thu hồi",
+      "segment_id": "439a8ef9b086",
+      "segment_name": "Toàn hành trình",
+      "value": 0.08888888888888889,
+      "unit": "kWh",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "f687280a58bc",
+      "formula_name": "Quãng đường",
+      "segment_id": "86f1e17f773f",
+      "segment_name": "Tăng tốc",
+      "value": 0.4,
+      "unit": "km",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "f687280a58bc",
+      "formula_name": "Quãng đường",
+      "segment_id": "a0a85c33ba43",
+      "segment_name": "Thu hồi năng lượng",
+      "value": 0.4,
+      "unit": "km",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "f687280a58bc",
+      "formula_name": "Quãng đường",
+      "segment_id": "f65486eea975",
+      "segment_name": "Chạy ổn định",
+      "value": 0.4,
+      "unit": "km",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "f687280a58bc",
+      "formula_name": "Quãng đường",
+      "segment_id": "439a8ef9b086",
+      "segment_name": "Toàn hành trình",
+      "value": 1.2,
+      "unit": "km",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h).",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "c1b83ed92ba5",
+      "formula_name": "Công suất pin",
+      "segment_id": "86f1e17f773f",
+      "segment_name": "Tăng tốc",
+      "value": null,
+      "unit": "kW",
+      "status": "trace",
+      "message": "Công thức tín hiệu; dùng Vẽ công thức để xem đồ thị.",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "c1b83ed92ba5",
+      "formula_name": "Công suất pin",
+      "segment_id": "a0a85c33ba43",
+      "segment_name": "Thu hồi năng lượng",
+      "value": null,
+      "unit": "kW",
+      "status": "trace",
+      "message": "Công thức tín hiệu; dùng Vẽ công thức để xem đồ thị.",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "c1b83ed92ba5",
+      "formula_name": "Công suất pin",
+      "segment_id": "f65486eea975",
+      "segment_name": "Chạy ổn định",
+      "value": null,
+      "unit": "kW",
+      "status": "trace",
+      "message": "Công thức tín hiệu; dùng Vẽ công thức để xem đồ thị.",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "c1b83ed92ba5",
+      "formula_name": "Công suất pin",
+      "segment_id": "439a8ef9b086",
+      "segment_name": "Toàn hành trình",
+      "value": null,
+      "unit": "kW",
+      "status": "trace",
+      "message": "Công thức tín hiệu; dùng Vẽ công thức để xem đồ thị.",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "7a71e658d003",
+      "formula_name": "Mức tiêu thụ",
+      "segment_id": "86f1e17f773f",
+      "segment_name": "Tăng tốc",
+      "value": 55.55555555555555,
+      "unit": "kWh/100km",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h). Chưa xác minh đơn vị không nhận diện được: kWh/100km.",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "7a71e658d003",
+      "formula_name": "Mức tiêu thụ",
+      "segment_id": "a0a85c33ba43",
+      "segment_name": "Thu hồi năng lượng",
+      "value": -22.22222222222222,
+      "unit": "kWh/100km",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h). Chưa xác minh đơn vị không nhận diện được: kWh/100km.",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "7a71e658d003",
+      "formula_name": "Mức tiêu thụ",
+      "segment_id": "f65486eea975",
+      "segment_name": "Chạy ổn định",
+      "value": 33.33333333333333,
+      "unit": "kWh/100km",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h). Chưa xác minh đơn vị không nhận diện được: kWh/100km.",
+      "coverage": 1.0
+    },
+    {
+      "formula_id": "7a71e658d003",
+      "formula_name": "Mức tiêu thụ",
+      "segment_id": "439a8ef9b086",
+      "segment_name": "Toàn hành trình",
+      "value": 22.222222222222225,
+      "unit": "kWh/100km",
+      "status": "ok",
+      "message": "Kiểm tra thứ nguyên; không tự đổi thang đơn vị (V/mV, W/kW, s/h). Chưa xác minh đơn vị không nhận diện được: kWh/100km.",
+      "coverage": 1.0
+    }
+  ],
+  "excel_sheets": [
+    "Summary",
+    "Signals",
+    "Segments",
+    "Formulas",
+    "Results",
+    "Raster_Tăng tốc_1",
+    "Raster_Thu hồi năng lượng_1",
+    "Raster_Chạy ổn định_1",
+    "Raster_Toàn hành trình_1"
+  ],
+  "decoded_mf4_groups": 16,
+  "raw_mf4_dbc_roundtrip": "1201 voltage samples, all 400 V",
+  "files": {
+    "excel": "stage-report.xlsx",
+    "decoded": "stages-decoded.mf4",
+    "raw": "can-raw.mf4",
+    "project": "input/demo.vls.json"
+  }
+}

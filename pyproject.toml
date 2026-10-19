@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vehicle-log-studio"
+version = "0.1.0"
+description = "Desktop CAN log analysis, segments, formulas and Excel/MF4 export"
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=2.0,<3", "python-can>=4.4,<5", "cantools>=40,<46",
+  "asammdf>=8.3,<9", "xlsxwriter>=3.2,<4",
+  "PySide6>=6.7,<7", "pyqtgraph>=0.13,<0.15"
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "openpyxl>=3.1", "psutil>=6"]
+build = ["pyinstaller>=6"]
+
+[project.scripts]
+vehicle-log-studio = "vehiclelog.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["vehiclelog*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

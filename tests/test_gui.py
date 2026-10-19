@@ -351,3 +351,66 @@ def test_repeated_jobs_deliver_widget_progress_on_gui_thread(window, app, monkey
     assert results == [0, 1, 2]
     assert len(deliveries) >= 120
     assert all(thread_id == gui_thread for thread_id in deliveries)
+
+
+def test_hover_reads_native_sample_and_keeps_stages_unchanged(window, app):
+    import copy
+    window.show()
+    for key in ("current", "voltage"):
+        _item_with_key(window.signal_list, key).setCheckState(QtCore.Qt.CheckState.Checked)
+    app.processEvents()
+    window.reset_view()
+    app.processEvents()
+    before = copy.deepcopy(window.project)
+    dirty = window._dirty
+    # Deliberately remove preview data: hover must still use original samples.
+    window.curves["current"].setData([], [])
+    view = window.plots["current"].getViewBox()
+    y = sum(view.viewRange()[1]) / 2
+    window._hover_moved((view.mapViewToScene(QtCore.QPointF(1.5, y)),))
+    assert "BatteryCurrent" in window.hover_label.text()
+    assert "Y = 20 A" in window.hover_label.text()
+    assert "mẫu tại 1.000000 s" in window.hover_label.text()
+    assert window._hover_items["current"][1].isVisible()
+    assert not window._hover_items["voltage"][1].isVisible()
+    assert all(line.isVisible() for line, dot in window._hover_items.values())
+    assert window.project == before
+    assert window._dirty == dirty
+    view = window.plots["voltage"].getViewBox()
+    window._hover_moved((view.mapViewToScene(QtCore.QPointF(2, 400)),))
+    assert "Y = 400 V" in window.hover_label.text()
+    assert not window._hover_items["current"][1].isVisible()
+
+
+def test_hover_disable_leave_and_rebuild_clear_readout(window, app):
+    window.show()
+    _item_with_key(window.signal_list, "current").setCheckState(QtCore.Qt.CheckState.Checked)
+    app.processEvents()
+    view = window.plots["current"].getViewBox()
+    position = view.mapViewToScene(QtCore.QPointF(2, 10))
+    window._hover_moved((position,))
+    assert window._hover_items["current"][1].isVisible()
+    app.sendEvent(window.graphics.viewport(), QtCore.QEvent(QtCore.QEvent.Type.Leave))
+    assert not window._hover_items["current"][1].isVisible()
+    window.hover_check.setChecked(False)
+    window._hover_moved((position,))
+    assert not window._hover_items["current"][0].isVisible()
+    window.hover_check.setChecked(True)
+    window._rebuild_plots()
+    assert len(window._hover_items) == len(window.plots)
+    assert all(not dot.isVisible() for line, dot in window._hover_items.values())
+    window._hover_moved((QtCore.QPointF(-100, -100),))
+    assert "Di chuột" in window.hover_label.text()
+
+
+def test_hover_outside_signal_bounds_has_no_stale_value(window, app):
+    window.show()
+    _item_with_key(window.signal_list, "current").setCheckState(QtCore.Qt.CheckState.Checked)
+    app.processEvents()
+    plot = window.plots["current"]
+    plot.setXRange(-2, 7, padding=0)
+    app.processEvents()
+    view = plot.getViewBox()
+    window._hover_moved((view.mapViewToScene(QtCore.QPointF(-1, 10)),))
+    assert "không có mẫu hợp lệ" in window.hover_label.text()
+    assert not window._hover_items["current"][1].isVisible()

@@ -42,9 +42,17 @@ class WorkspacePanel:
         for control in (self.fit_x_button, self.fit_y_button, self.fit_all_button):
             fit_bar.addWidget(control)
         fit_bar.addStretch()
+        self.hover_check = QtWidgets.QCheckBox("Con trỏ xem nhanh")
+        self.hover_check.setChecked(True)
+        self.hover_check.toggled.connect(self._hide_hover)
+        fit_bar.addWidget(self.hover_check)
         layout.addLayout(fit_bar)
+        self.hover_label = label("Di chuột trên đồ thị để xem thời gian và giá trị tín hiệu", "muted")
+        self.hover_label.setWordWrap(True)
+        layout.addWidget(self.hover_label)
         # Canvas co cả scene khi cần, thay vì tăng minimumHeight và buộc cuộn.
         self.graphics = FittedPlotCanvas()
+        self.graphics.pointerLeft.connect(self._hide_hover)
         layout.addWidget(self.graphics, 1)
         self.empty_label = label("Mở log và chọn tín hiệu ở bảng bên trái\nđể bắt đầu phân tích.", "muted")
         self.empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)

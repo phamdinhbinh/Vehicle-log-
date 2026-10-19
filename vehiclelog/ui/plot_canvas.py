@@ -15,8 +15,11 @@ class FittedPlotCanvas(pg.GraphicsLayoutWidget):
     Nhiều tín hiệu sẽ có khung nhỏ hơn; tất cả vẫn nằm trong viewport.
     """
 
+    pointerLeft = QtCore.Signal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.viewport().installEventFilter(self)
         self.setMinimumSize(0, 0)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -25,6 +28,12 @@ class FittedPlotCanvas(pg.GraphicsLayoutWidget):
         self._fit_timer = QtCore.QTimer(self)
         self._fit_timer.setSingleShot(True)
         self._fit_timer.timeout.connect(self.fit_rows)
+
+    def eventFilter(self, watched, event):
+        """Xóa readout khi chuột rời viewport, kể cả không có mouseMoved tiếp theo."""
+        if watched is self.viewport() and event.type() == QtCore.QEvent.Type.Leave:
+            self.pointerLeft.emit()
+        return super().eventFilter(watched, event)
 
     def resizeEvent(self, event):
         """Co giãn lại scene sau khi Qt tính xong kích thước viewport mới."""

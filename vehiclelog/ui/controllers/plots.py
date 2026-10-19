@@ -23,6 +23,7 @@ class PlotsController:
         self._plot_timer.stop()
         old_range = next(iter(self.plots.values())).viewRange()[0] if self.plots else [0, max(1, self.duration)]
         self._syncing = True
+        self._clear_hover()
         self.graphics.clear()
         self.plots, self.curves, self.cursor_lines = {}, {}, {}
         self.segment_regions = []
@@ -90,6 +91,7 @@ class PlotsController:
         self._update_curves()
         self._refresh_values()
         self.graphics.fit_rows()
+        self._install_hover()
 
 
     def _range_changed(self, *_):

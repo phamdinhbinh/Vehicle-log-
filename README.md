@@ -259,7 +259,7 @@ thu trên BLF 3 GB. Chưa có file thực tế của người dùng để xác n
 
 ## Kiểm thử và đóng gói
 
-Kết quả trong base environment: **109 kiểm thử đạt**, kiểm tra dependency không
+Kết quả trong base environment: **112 kiểm thử đạt**, kiểm tra dependency không
 có xung đột. Chi tiết và số đo tổng hợp tại [VALIDATION.md](VALIDATION.md).
 
 ```bash
@@ -287,3 +287,12 @@ Các chức năng mở rộng đã đề xuất nhưng chưa thuộc bản đầ
 theo điều kiện, ghi chú sự kiện, so sánh nhiều log, xử lý hàng loạt thư mục,
 CSV/Parquet và quản lý nhóm tín hiệu độc lập. Cần nghiệm thu trên dữ liệu thật
 trước khi coi ứng dụng sẵn sàng dùng cho kết luận đo kiểm chính thức.
+
+### Con trỏ xem nhanh theo chuột
+
+Bật **Con trỏ xem nhanh** trên thanh căn đồ thị rồi di chuột trong hàng tín hiệu.
+Đường đứng thể hiện thời gian chung; chấm sáng và dòng thông tin hiển thị tên,
+thời gian, giá trị và đơn vị của tín hiệu đang trỏ. Giá trị lấy từ dữ liệu gốc,
+giữ mẫu ngay trước thời điểm chuột và ghi rõ thời gian mẫu. Ngoài phạm vi dữ liệu
+sẽ hiển thị dấu —. Con trỏ này không tạo mốc M1/M2, không đổi giai đoạn hay kết quả
+công thức. Tắt ô chọn để ẩn con trỏ xem nhanh.

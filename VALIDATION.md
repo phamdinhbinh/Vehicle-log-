@@ -1,3 +1,9 @@
+## Bổ sung con trỏ xem nhanh
+
+Toàn bộ **112 kiểm thử đạt** (8 cảnh báo deprecation từ thư viện).
+Đã kiểm tra lấy mẫu gốc khi preview trống, đổi hàng tín hiệu, giữ nguyên dự án/giai đoạn,
+bật/tắt, rời viewport, dựng lại đồ thị và thời gian ngoài dữ liệu.
+
 # Kết quả kiểm chứng bản 0.1.0
 
 ## Cập nhật căn đồ thị và giai đoạn liền kề

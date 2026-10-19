@@ -238,3 +238,6 @@ Remove-Item Env:QT_QPA_PLATFORM
 rg -n 'COMPONENT:|Sửa tại đây khi:' vehiclelog
 rg -n 'def calculate|def _sync_cursor|def export_excel' vehiclelog
 ```
+
+Con trỏ xem nhanh: `vehiclelog/ui/controllers/hover.py` xử lý chuột và lấy mẫu gốc;
+`ui/panels/workspace.py` đặt checkbox/readout; `ui/plot_canvas.py` phát sự kiện rời viewport.

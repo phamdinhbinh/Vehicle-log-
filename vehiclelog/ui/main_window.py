@@ -22,6 +22,7 @@ from .controllers.demo import DemoController
 from .controllers.project import ProjectController
 from .controllers.window import WindowController
 from .controllers.signals import SignalsController
+from .controllers.hover import HoverController
 from .controllers.plots import PlotsController
 from .controllers.previews import PreviewsController
 from .controllers.cursors import CursorsController
@@ -44,6 +45,7 @@ class MainWindow(
     WindowController,
     SignalsController,
     PlotsController,
+    HoverController,
     PreviewsController,
     CursorsController,
     MeasurementsController,

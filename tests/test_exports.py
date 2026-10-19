@@ -52,32 +52,41 @@ def test_excel_native_metadata_formulas_results_and_split(store, tmp_path, monke
         assert _data_rows(book, "Results")[0][6] == "incomplete"
 
 
-def test_excel_raster_preserves_gaps_and_has_no_extrapolation(store, tmp_path, monkeypatch):
-    monkeypatch.setattr(excel, "RASTER_CHUNK_SIZE", 3)
-    path = exports.export_excel(store, tmp_path / "raster.xlsx", keys=["i"],
-                                segments=[Segment("Window", 0, 11)], raster=0.5,
-                                max_gap=1.0)
+def test_excel_keeps_distinct_fractional_sample_times_and_gaps(tmp_path, monkeypatch):
+    monkeypatch.setattr(excel, "CHUNK_SIZE", 2)
+    native = {
+        "u": ("Voltage", "V", [.017, .027, .039, .054, 1.123456789], [400, 401, np.nan, 403, 410]),
+        "i": ("Current", "A", [.023, .129, .234], [1, 2, 3]),
+    }
+    with StoreWriter(tmp_path / "unequal-cache", {"duration": 2}) as writer:
+        for key, (name, unit, times, values) in native.items():
+            writer.add_signal(SignalInfo(key, name, unit))
+            writer.append(key, times, values)
+        source = writer.finish()
+    path = exports.export_excel(source, tmp_path / "native.xlsx")
     with closing(openpyxl.load_workbook(path, read_only=True, data_only=True)) as book:
-        rows = _data_rows(book, "Raster_")
-        values = {row[2]: row[3] if len(row) > 3 else None for row in rows}
-        assert values[0] == 1
-        assert values[0.5] == 1
-        assert values[4] == 4
-        assert values[4.5] is None
-        assert values[9.5] is None
-        assert values[10] == 5
-        assert values[10.5] is None
+        assert not any(name.startswith("Raster_") for name in book.sheetnames)
+        for name, unit, times, values in native.values():
+            rows = _data_rows(book, f"Data_{name}")
+            np.testing.assert_allclose([r[2] for r in rows], times, rtol=0, atol=1e-15)
+            np.testing.assert_allclose([np.nan if r[3] is None else r[3] for r in rows],
+                                       values, equal_nan=True)
+            assert len(rows) == len(times)
+        assert _data_rows(book, "Data_Voltage")[2][4] is False
+        summary = dict(_data_rows(book, "Summary"))
+        assert summary["layout"] == "native per signal"
+        assert not {"raster_s", "interpolation", "max_gap_s"} & summary.keys()
 
 
-def test_excel_raster_linear_and_column_split(store, tmp_path, monkeypatch):
-    monkeypatch.setattr(excel_sheets, "EXCEL_MAX_COLUMNS", 4)
-    path = exports.export_excel(store, tmp_path / "linear.xlsx", segments=[Segment("A", 0, 1)],
-                                raster=0.5, interpolation="linear", max_gap=1)
+def test_excel_stage_filters_samples_without_rebasing_or_creating_boundaries(store, tmp_path):
+    # Boundaries between recorded samples must not create synthetic rows or reset t=0.
+    path = exports.export_excel(store, tmp_path / "stage.xlsx", keys=["i"],
+                                segments=[Segment("Cut", .5, 2.5), Segment("Gap", 4, 9)])
     with closing(openpyxl.load_workbook(path, read_only=True, data_only=True)) as book:
-        sheets = [name for name in book.sheetnames if name.startswith("Raster_")]
-        assert len(sheets) == 2
-        assert list(book[sheets[0]].values)[2][3] == 400.5
-        assert list(book[sheets[1]].values)[2][3] == 1.5
+        rows = _data_rows(book, "Data_Current")
+        assert [r[2] for r in rows] == [1, 2]
+        assert [r[3] for r in rows] == [2, 3]
+        assert all(r[1] == "Cut" for r in rows)
 
 
 def test_excel_strings_are_never_formulas(store, tmp_path):
@@ -201,7 +210,7 @@ def test_mf4_refuses_input_overwrite_even_if_missing_on_disk(store, tmp_path):
 
 
 def test_empty_selection_and_bad_parameters_fail_before_output(store, tmp_path):
-    for kwargs in [{"keys": []}, {"raster": 0}, {"max_gap": -1}, {"interpolation": "bad"}]:
+    for kwargs in [{"keys": []}, {"keys": ["missing"]}, {"segments": [Segment("Bad", 3, 1)]}]:
         with pytest.raises(ValueError):
             exports.export_excel(store, tmp_path / "bad.xlsx", **kwargs)
     with pytest.raises(ValueError):

@@ -1,3 +1,19 @@
+## Xuất Excel giữ nguyên mẫu gốc
+
+Toàn bộ **117 kiểm thử đạt trong 6.92 s**, 8 cảnh báo deprecation từ thư viện.
+`compileall` package và scripts thành công.
+
+- Tín hiệu khác tần số, lệch mốc và timestamp lẻ vẫn giữ đúng mẫu khi vẽ,
+  zoom/căn khung và xuất Excel; preview rút gọn chỉ dùng điểm gốc.
+- Xuất giai đoạn chỉ lọc mẫu, không tạo mẫu ở biên, không đưa thời gian về 0.
+- Bỏ resampling ở API/CLI/GUI xuất Excel; các tùy chọn MF4 chỉ hiện ở MF4.
+- Tạo lại file demo `stage-report.xlsx`: 8 sheet, dữ liệu gốc riêng từng tín hiệu,
+  đọc lại đối chiếu timestamp/giá trị với nguồn cho toàn bộ giai đoạn.
+- Đã dựng thực tế hộp thoại xuất bằng Qt offscreen. Cơ chế căn thời gian để tính
+  công thức năng lượng được giữ và vẫn qua toàn bộ kiểm thử công thức.
+
+Các mục dưới đây ghi lại những lần kiểm chứng trước.
+
 ## Bổ sung con trỏ xem nhanh
 
 Toàn bộ **112 kiểm thử đạt** (8 cảnh báo deprecation từ thư viện).
@@ -57,7 +73,7 @@ tra tương tác trên màn hình Windows hoặc tạo bản Windows executable.
 - MF4: giá trị vật lý, mẫu invalid, cảnh báo mất độ chính xác số nguyên lớn.
 - Công thức: AST, hold/linear, tín hiệu lệch nhịp, ranh giới, tích phân, đổi dấu,
   khoảng mất mẫu, cực trị, `safe_div`, gán giai đoạn, xử lý theo khối.
-- Excel: native/raster, khoảng trống, chia hàng/cột, provenance, kết quả công thức.
+- Excel: timestamp/mẫu gốc riêng mỗi tín hiệu, khoảng trống, chia hàng, provenance, kết quả công thức.
 - MF4 xuất: native, invalidity, giai đoạn, chuỗi công thức, dữ liệu CAN FD thô,
   giải mã lại bằng DBC, hủy khi ghi, bảo vệ nguồn/đích.
 - CLI và GUI: pipeline, worker ngoài UI thread, cập nhật UI qua callback,
@@ -84,7 +100,7 @@ tốc độ 36 km/h. Giữ giá trị trước theo timestamp (hold).
 
 `scripts/verify_demo.py` đã tạo và đọc lại:
 
-- `examples/verified-output/stage-report.xlsx`: đủ 9 sheet, kết quả và raster.
+- `examples/verified-output/stage-report.xlsx`: các sheet mẫu gốc từng tín hiệu và kết quả.
 - `examples/verified-output/stages-decoded.mf4`: 16 nhóm gồm 3 tín hiệu và
   công suất tính toán cho 4 giai đoạn, giữ nhãn và provenance.
 - `examples/verified-output/can-raw.mf4`: giải mã lại với DBC bằng asammdf,

@@ -1,6 +1,6 @@
 """Hộp thoại cấu hình xuất Excel, MF4 tín hiệu hoặc MF4 bản tin thô.
 
-Chức năng: chọn định dạng, tín hiệu, giai đoạn và các tùy chọn đồng bộ thời gian.
+Chức năng: chọn định dạng, tín hiệu và giai đoạn; Excel giữ nguyên mẫu gốc.
 Sửa tại đây khi: đổi giao diện xuất hoặc điều kiện bật/tắt, xác thực các lựa chọn.
 Liên kết: MainWindow chạy tác vụ xuất; exports.py chịu trách nhiệm ghi file.
 """
@@ -11,7 +11,7 @@ from pathlib import Path
 
 from PySide6 import QtCore, QtWidgets
 
-from ..widgets import button, label, time_spin
+from ..widgets import button, label
 
 Qt = QtCore.Qt
 
@@ -23,33 +23,24 @@ class ExportDialog(QtWidgets.QDialog):
         super().__init__(parent)
         self.store, self.project = store, project
         self.setWindowTitle("Xuất dữ liệu & kết quả")
-        self.resize(710, 650)
+        self.resize(710, 590)
         layout = QtWidgets.QVBoxLayout(self)
         form = QtWidgets.QFormLayout()
+        self._format_form = form
         self.format_combo = QtWidgets.QComboBox()
         self.format_combo.addItem("Excel (.xlsx)", "excel")
         self.format_combo.addItem("MF4 — tín hiệu đã giải mã", "mf4")
         self.format_combo.addItem("BLF → MF4 — bản tin CAN thô", "raw")
         form.addRow("Định dạng", self.format_combo)
-        self.raster_check = QtWidgets.QCheckBox("Đồng bộ thời gian khi xuất Excel")
-        self.raster_spin = time_spin(0.1)
-        self.raster_spin.setMinimum(0.000001)
-        self.raster_spin.setEnabled(False)
-        self.raster_check.toggled.connect(self.raster_spin.setEnabled)
-        form.addRow(self.raster_check, self.raster_spin)
-        self.interpolation = QtWidgets.QComboBox()
-        self.interpolation.addItem("Giữ giá trị trước", "hold")
-        self.interpolation.addItem("Nội suy tuyến tính", "linear")
-        self.max_gap = time_spin(1)
-        self.max_gap.setMinimum(0.000001)
-        form.addRow("Đồng bộ Excel", self.interpolation)
-        form.addRow("Khoảng mất mẫu tối đa", self.max_gap)
         self.zero_check = QtWidgets.QCheckBox("Đưa đầu khoảng xuất về 0 s (MF4)")
         form.addRow("Mốc thời gian", self.zero_check)
         self.derived_check = QtWidgets.QCheckBox("Kèm tín hiệu công thức đã gán cho các giai đoạn chọn")
         self.derived_check.setToolTip("Chỉ công thức tạo chuỗi tín hiệu; kết quả vô hướng xuất trong Excel.")
         form.addRow("MF4 đã giải mã", self.derived_check)
         layout.addLayout(form)
+        self.format_note = label("", "muted")
+        self.format_note.setWordWrap(True)
+        layout.addWidget(self.format_note)
         lists = QtWidgets.QHBoxLayout()
         left = QtWidgets.QVBoxLayout()
         left.addWidget(label("TÍN HIỆU XUẤT", "section"))
@@ -61,7 +52,8 @@ class ExportDialog(QtWidgets.QDialog):
             item.setCheckState(Qt.CheckState.Checked if key in project.selected_signals else Qt.CheckState.Unchecked)
             self.signal_list.addItem(item)
         left.addWidget(self.signal_list)
-        left.addWidget(button("Chọn tất cả tín hiệu", lambda: self.check_all(self.signal_list)))
+        self.select_signals_button = button("Chọn tất cả tín hiệu", lambda: self.check_all(self.signal_list))
+        left.addWidget(self.select_signals_button)
         right = QtWidgets.QVBoxLayout()
         self.whole_check = QtWidgets.QCheckBox("Toàn bộ log")
         self.whole_check.setChecked(True)
@@ -86,8 +78,6 @@ class ExportDialog(QtWidgets.QDialog):
         self.signal_list.itemChanged.connect(self.update_estimate)
         self.segment_list.itemChanged.connect(self.update_estimate)
         self.whole_check.toggled.connect(self.update_estimate)
-        self.raster_check.toggled.connect(self.update_estimate)
-        self.raster_spin.valueChanged.connect(self.update_estimate)
         self.format_combo.currentIndexChanged.connect(self.update_format)
         notes = label("Excel tự chia sheet khi vượt giới hạn. MF4 giữ các khoảng thời gian đã chọn.\n"
                       "File đích phải là file mới. Chi tiết, DBC và công thức được ghi kèm khi định dạng hỗ trợ.", "muted")
@@ -120,30 +110,34 @@ class ExportDialog(QtWidgets.QDialog):
         return None if self.whole_check.isChecked() else [s for s in self.project.segments if s.id in ids]
 
     def update_format(self, *_):
-        """Bật đúng trường tùy chọn theo định dạng, không thay đổi logic ghi file."""
+        """Chỉ hiện tùy chọn cần cho định dạng đang chọn, Excel luôn giữ mẫu gốc."""
         kind = self.format_combo.currentData()
         excel = kind == "excel"
         self.signal_list.setEnabled(kind != "raw")
-        self.raster_check.setEnabled(excel)
-        self.raster_spin.setEnabled(excel and self.raster_check.isChecked())
-        self.interpolation.setEnabled(excel and self.raster_check.isChecked())
-        self.max_gap.setEnabled(excel and self.raster_check.isChecked())
-        self.zero_check.setEnabled(not excel)
-        self.derived_check.setEnabled(kind == "mf4")
+        self.select_signals_button.setEnabled(kind != "raw")
+        self._format_form.setRowVisible(self.zero_check, not excel)
+        self._format_form.setRowVisible(self.derived_check, kind == "mf4")
+        if excel:
+            self.format_note.setText("Excel giữ nguyên thời điểm lấy mẫu (giây) và giá trị gốc của từng tín hiệu. "
+                                     "Các tín hiệu được ghi riêng; không đồng bộ hoặc nội suy khi xuất.")
+        elif kind == "mf4":
+            self.format_note.setText("MF4 giữ các mẫu gốc của tín hiệu đã chọn. "
+                                     "Có thể kèm tín hiệu công thức cho từng giai đoạn.")
+        else:
+            self.format_note.setText("Chuyển các bản tin CAN thô trong BLF sang MF4; "
+                                     "danh sách tín hiệu không áp dụng cho định dạng này.")
         self.update_estimate()
 
     def update_estimate(self, *_):
-        """Ước tính kích thước bảng đồng bộ hoặc số mẫu gốc để người dùng cân nhắc."""
+        """Đọc tổng mẫu gốc từ metadata, không tải dữ liệu lớn khi thay lựa chọn."""
+        if self.format_combo.currentData() == "raw":
+            self.estimate.setText("Xuất các bản tin CAN thô trong khoảng thời gian đã chọn.")
+            return
         keys = self.checked(self.signal_list)
         segments = self.selected_segments()
-        if self.raster_check.isChecked() and self.format_combo.currentData() == "excel":
-            duration = sum(s.end - s.start for s in segments) if segments is not None else float(self.store.metadata.get("duration", 0))
-            rows = int(duration / self.raster_spin.value()) + (len(segments) if segments else 1)
-            cells = rows * (len(keys) + 1)
-            text = f"Ước tính đồng bộ: {rows:,} hàng · {cells:,} ô."
-        else:
-            count = sum(self.store.signals[k].count for k in keys)
-            text = f"Tín hiệu đã chọn: {len(keys)} · {count:,} mẫu trong toàn log (chưa lọc giai đoạn)."
+        count = sum(self.store.signals[k].count for k in keys)
+        scope = "trong toàn log" if segments is None else "trong toàn log (chưa lọc giai đoạn)"
+        text = f"Tín hiệu đã chọn: {len(keys)} · {count:,} mẫu gốc {scope}."
         self.estimate.setText(text)
 
     def accept(self):

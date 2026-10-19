@@ -33,7 +33,7 @@ def verify(directory):
         if result.segment_name == "Toàn hành trình" and result.formula_name in expected:
             assert np.isclose(result.value, expected[result.formula_name], rtol=1e-8, atol=1e-10)
     xlsx = export_excel(store, directory / "stage-report.xlsx", segments=project.segments,
-                        formulas=project.formulas, results=results, raster=0.1)
+                        formulas=project.formulas, results=results)
     book = load_workbook(xlsx, read_only=True, data_only=True)
     try:
         assert {"Summary", "Signals", "Segments", "Formulas", "Results"}.issubset(book.sheetnames)

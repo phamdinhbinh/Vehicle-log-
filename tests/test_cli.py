@@ -104,3 +104,10 @@ def test_cli_reports_unassigned_project(cli_demo, tmp_path):
     filename = save_project(project, tmp_path / "unassigned.vls.json")
     result = invoke("analyze", filename, cache=cache, expected=1)
     assert "chưa có công thức" in result.stderr
+
+
+def test_cli_excel_help_only_offers_native_sampling(tmp_path):
+    help_text = invoke("convert", "--help", cache=tmp_path).stdout
+    assert "--raster" not in help_text
+    assert "--interpolation" not in help_text
+    assert "--max-gap" not in help_text

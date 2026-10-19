@@ -158,7 +158,7 @@ cần. Hàm tổng hợp còn cần cách tích lũy trong `engine.py`. Sau đó
 
 | Component | Trách nhiệm / vị trí sửa |
 | --- | --- |
-| [writers/excel.py](vehiclelog/writers/excel.py) | Luồng xuất native/raster và dữ liệu từng hàng |
+| [writers/excel.py](vehiclelog/writers/excel.py) | Luồng xuất mẫu gốc và dữ liệu từng hàng |
 | [writers/excel_sheets.py](vehiclelog/writers/excel_sheets.py) | Màu tiêu đề, độ rộng cột, tên sheet, bộ lọc và chia sheet |
 | [writers/excel_metadata.py](vehiclelog/writers/excel_metadata.py) | Các cột/nội dung Summary, Signals, Segments, Formulas, Results |
 | [writers/mf4.py](vehiclelog/writers/mf4.py) | Tín hiệu MF4 đã giải mã và chuỗi công thức theo giai đoạn |
@@ -241,3 +241,6 @@ rg -n 'def calculate|def _sync_cursor|def export_excel' vehiclelog
 
 Con trỏ xem nhanh: `vehiclelog/ui/controllers/hover.py` xử lý chuột và lấy mẫu gốc;
 `ui/panels/workspace.py` đặt checkbox/readout; `ui/plot_canvas.py` phát sự kiện rời viewport.
+
+Kiểm tra timestamp gốc trên đồ thị và hộp thoại xuất: `tests/test_native_time.py`.
+Xuất Excel chỉ ghi mẫu gốc trong `writers/excel.py`; không còn bước lấy mẫu lại.

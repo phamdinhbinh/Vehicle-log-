@@ -47,8 +47,6 @@ class ExportsController:
                 self._notify("Giai đoạn chưa hợp lệ", str(exc))
                 return
         from ...exports import export_excel, export_mf4, export_raw_mf4
-        raster = dialog.raster_spin.value() if dialog.raster_check.isChecked() else None
-        interpolation, max_gap = dialog.interpolation.currentData(), dialog.max_gap.value()
         zero_time, include_derived = dialog.zero_check.isChecked(), dialog.derived_check.isChecked()
         store, project = self.store, self.project
         mapping = {int(k): v for k, v in project.dbc_map.items()}
@@ -56,7 +54,7 @@ class ExportsController:
             common = {"segments": segments, "progress": progress, "token": token}
             if kind == "excel":
                 return export_excel(store, destination, keys=keys, formulas=project.formulas,
-                                    results=project.results, raster=raster, interpolation=interpolation, max_gap=max_gap, **common)
+                                    results=project.results, **common)
             if kind == "mf4":
                 return export_mf4(store, destination, keys=keys, zero_time=zero_time,
                                   formulas=project.formulas if include_derived else None, **common)

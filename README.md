@@ -170,17 +170,20 @@ Python tùy ý. Có kiểm tra thứ nguyên cho các đơn vị nhận diện �
 
 ## Xuất Excel
 
-- **Native**: từng tín hiệu có timestamp gốc, giá trị, cờ hợp lệ và tên giai đoạn.
-- **Raster**: một trục thời gian chung, bước do người dùng chọn; khoảng thiếu
-  dữ liệu được để trống theo quy tắc hold/linear và `max_gap`.
+- Mỗi tín hiệu có sheet riêng với timestamp gốc (`Time_s`), giá trị, cờ hợp lệ và
+  tên giai đoạn. Tín hiệu khác tần số vẫn giữ các thời điểm lấy mẫu riêng.
+- Excel luôn giữ mẫu gốc: không nội suy, không ép về một bước thời gian chung,
+  không làm tròn timestamp về giây nguyên. Mẫu lỗi có giá trị trống và Valid=false.
+- Khi chọn giai đoạn, chỉ lọc mẫu trong khoảng đó; giữ mốc thời gian của log và
+  không tạo mẫu ở hai biên. Chỉ cần chọn tín hiệu, toàn log hoặc giai đoạn và nơi lưu.
 - Kèm các sheet Summary, Signals, Segments, Formulas, Results và dữ liệu.
-- Tự chia sheet khi vượt 1.048.576 hàng; raster quá rộng được chia cả theo cột.
+- Tự chia sheet khi vượt 1.048.576 hàng.
 - Thông tin công thức được ghi dưới dạng văn bản và kết quả đã tính bằng Python.
 - Từ chối ghi đè file có sẵn hoặc file nguồn/DBC. Kết quả chỉ được công bố khi
   ghi hoàn tất; file tạm được dọn khi hủy hoặc lỗi.
 
 Excel có thể trở nên quá lớn khi xuất hàng nghìn tín hiệu của log dài. Nên chọn
-tín hiệu/giai đoạn cần thiết hoặc dùng bước thời gian lớn hơn khi phù hợp.
+tín hiệu/giai đoạn cần thiết để giảm kích thước file.
 
 ## Xuất MF4
 
@@ -209,9 +212,9 @@ CANape/CANoe thực tế của người dùng.
 # Xem danh sách tín hiệu; kênh hiển thị bắt đầu từ 1
 python -m vehiclelog inspect drive.blf --dbc 1=vehicle.dbc --cache-root ./cache
 
-# Excel một giai đoạn, đồng bộ mỗi 100 ms
+# Excel một giai đoạn, giữ nguyên các mẫu ghi trong log
 python -m vehiclelog convert drive.blf urban.xlsx --format excel \
-  --dbc 1=vehicle.dbc --signal VehicleSpeed --segment Urban:10:60 --raster 0.1
+  --dbc 1=vehicle.dbc --signal VehicleSpeed --segment Urban:10:60
 
 # MF4 đã giải mã, giữ timestamp gốc
 python -m vehiclelog convert drive.blf decoded.mf4 --format mf4 --dbc 1=vehicle.dbc
@@ -259,7 +262,7 @@ thu trên BLF 3 GB. Chưa có file thực tế của người dùng để xác n
 
 ## Kiểm thử và đóng gói
 
-Kết quả trong base environment: **112 kiểm thử đạt**, kiểm tra dependency không
+Kết quả trong base environment: **117 kiểm thử đạt**, kiểm tra dependency không
 có xung đột. Chi tiết và số đo tổng hợp tại [VALIDATION.md](VALIDATION.md).
 
 ```bash
@@ -296,3 +299,15 @@ thời gian, giá trị và đơn vị của tín hiệu đang trỏ. Giá trị
 giữ mẫu ngay trước thời điểm chuột và ghi rõ thời gian mẫu. Ngoài phạm vi dữ liệu
 sẽ hiển thị dấu —. Con trỏ này không tạo mốc M1/M2, không đổi giai đoạn hay kết quả
 công thức. Tắt ô chọn để ẩn con trỏ xem nhanh.
+
+### Thời gian trên đồ thị và trong Excel
+
+Đồ thị dùng timestamp gốc của từng tín hiệu. Khi log lớn, bản xem trước chỉ giảm
+số điểm vẽ bằng cách chọn các điểm gốc, giữ thời gian của các điểm đó; thao tác này
+không đổi dữ liệu lưu hoặc dữ liệu xuất. Excel luôn xuất toàn bộ mẫu gốc trong
+phạm vi đã chọn. Căn thời gian Hold/Linear chỉ còn ở phần tính công thức để xử lý
+các tín hiệu khác tần số; không làm thay đổi tín hiệu gốc.
+
+Các tùy chọn xuất Excel cũ `raster`, `interpolation`, `max_gap` và các cờ CLI
+`--raster`, `--interpolation`, `--max-gap` đã được bỏ. Script gọi `export_excel`
+chỉ cần bỏ các tham số này; cấu hình nội suy trong công thức vẫn giữ nguyên.

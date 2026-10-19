@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from .common import _json
 from .excel_sheets import _Rows
 
-def _metadata(sheets, store, keys, scopes, formulas, results, raster, interpolation, max_gap):
+def _metadata(sheets, store, keys, scopes, formulas, results):
     """Ghi nguồn dữ liệu, tín hiệu, giai đoạn, định nghĩa công thức và kết quả.
 
     Sửa danh sách tiêu đề và rows.write tương ứng khi thêm cột báo cáo.
@@ -22,8 +22,8 @@ def _metadata(sheets, store, keys, scopes, formulas, results, raster, interpolat
         rows.write([str(key), value if isinstance(value, (str, int, float, bool)) else _json(value)])
     for key, value in {"exported_utc": datetime.now(timezone.utc).isoformat(),
                        "time_basis": "seconds relative to source log origin",
-                       "layout": "native per signal" if raster is None else "raster",
-                       "raster_s": raster, "interpolation": interpolation, "max_gap_s": max_gap,
+                       "layout": "native per signal",
+                       "sampling": "original timestamps and values; no resampling or interpolation",
                        "missing_data": "blank values; native Valid column marks invalid samples"}.items():
         rows.write([key, value])
     rows.finish()

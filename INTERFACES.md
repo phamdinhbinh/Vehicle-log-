@@ -50,10 +50,11 @@ Compute boundaries correctly and bound memory by evaluation chunks when possible
 ## Export (exports agent)
 
 `vehiclelog.exports.export_excel(store, destination, keys=None, segments=None,
- formulas=None, results=None, raster=None, interpolation='hold', max_gap=1.0,
- progress=None, token=None) -> Path`
-Native: tall layout per signal or data sheets with explicit timestamps, chunked.
-Raster optional, preserve gaps. Sheet split at Excel limit. Include provenance.
+ formulas=None, results=None, progress=None, token=None) -> Path`
+Native only: one sheet per signal with original timestamps and values, chunked.
+No resampling, interpolation or rebasing, including when filtering a stage.
+Sheet split at Excel limit. Include provenance. Legacy Excel resampling parameters
+(raster/interpolation/max_gap) are removed; formula alignment options are unchanged.
 `export_mf4(store, destination, keys=None, segments=None, zero_time=False,
  progress=None, token=None) -> Path` decoded numeric signals, native timestamps;
 segment labels/provenance recorded; no unintended concatenation of disjoint cuts.

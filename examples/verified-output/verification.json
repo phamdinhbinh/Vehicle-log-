@@ -279,10 +279,9 @@
     "Segments",
     "Formulas",
     "Results",
-    "Raster_Tăng tốc_1",
-    "Raster_Thu hồi năng lượng_1",
-    "Raster_Chạy ổn định_1",
-    "Raster_Toàn hành trình_1"
+    "Data_PackVoltage",
+    "Data_PackCurrent",
+    "Data_VehicleSpeed"
   ],
   "decoded_mf4_groups": 16,
   "raw_mf4_dbc_roundtrip": "1201 voltage samples, all 400 V",
@@ -291,5 +290,6 @@
     "decoded": "stages-decoded.mf4",
     "raw": "can-raw.mf4",
     "project": "input/demo.vls.json"
-  }
+  },
+  "excel_sampling": "original timestamps and values per signal; no resampling"
 }

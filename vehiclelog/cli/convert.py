@@ -43,7 +43,7 @@ def convert_log(args, progress):
             keys.extend(matches)
     options = dict(keys=keys or None, segments=parse_segments(args.segment), progress=progress)
     if args.format == "excel":
-        output = export_excel(store, args.destination, raster=args.raster, interpolation=args.interpolation, max_gap=args.max_gap, **options)
+        output = export_excel(store, args.destination, **options)
     else:
         output = export_mf4(store, args.destination, zero_time=args.zero_time, **options)
     print(output)
